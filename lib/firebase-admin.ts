@@ -11,7 +11,9 @@ function getAdminApp(): App {
   // secrets, so prefer a base64-encoded key (no special characters to corrupt)
   // and fall back to the raw escaped key for local/other environments.
   const privateKey = process.env.FIREBASE_PRIVATE_KEY_B64
-    ? Buffer.from(process.env.FIREBASE_PRIVATE_KEY_B64, "base64").toString("utf-8")
+    ? Buffer.from(process.env.FIREBASE_PRIVATE_KEY_B64, "base64")
+        .toString("utf-8")
+        .replace(/\\n/g, "\n")
     : process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n");
 
   return initializeApp({
