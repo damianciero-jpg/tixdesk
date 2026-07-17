@@ -7,11 +7,18 @@ import { getFirestore } from "firebase-admin/firestore";
 function getAdminApp(): App {
   if (getApps().length) return getApp();
 
+  // Vercel's env var UI can mangle literal \n sequences in multi-line-looking
+  // secrets, so prefer a base64-encoded key (no special characters to corrupt)
+  // and fall back to the raw escaped key for local/other environments.
+  const privateKey = process.env.FIREBASE_PRIVATE_KEY_B64
+    ? Buffer.from(process.env.FIREBASE_PRIVATE_KEY_B64, "base64").toString("utf-8")
+    : process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n");
+
   return initializeApp({
     credential: cert({
       projectId: process.env.FIREBASE_PROJECT_ID,
       clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
+      privateKey,
     }),
   });
 }
